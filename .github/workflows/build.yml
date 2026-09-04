@@ -1,0 +1,31 @@
+name: Build Wasil App AAB & APK
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install buildozer cython kivy
+
+    - name: Build Android Package
+      run: |
+        buildozer -v android release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Wasil-Release-App
+        path: bin/*
