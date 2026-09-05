@@ -23,11 +23,11 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        pip install --upgrade pip setuptools buildozer cython kivy
+        pip install --upgrade pip setuptools "buildozer==1.5.0" cython kivy
 
     - name: Build Android Package
       run: |
-        yes | buildozer -v android debug
+        buildozer -v android debug
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
