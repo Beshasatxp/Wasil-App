@@ -6,10 +6,19 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04   # ثابت بدل ubuntu-latest لتفادي كسر buildozer/p4a مع Ubuntu 24.04
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Free up disk space
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /opt/hostedtoolcache/CodeQL
+        sudo docker image prune --all --force
+        df -h
 
     - name: Set up Python
       uses: actions/setup-python@v5
@@ -19,15 +28,34 @@ jobs:
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev cmake libffi-dev libssl-dev
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk python3-pip \
+          autoconf automake libtool pkg-config \
+          zlib1g-dev libffi-dev libssl-dev \
+          libncurses-dev libncursesw5-dev \
+          cmake ccache
 
     - name: Install Python Dependencies
       run: |
-        pip install --upgrade pip setuptools "buildozer==1.5.0" cython kivy
+        pip install --upgrade pip setuptools wheel "buildozer==1.5.0" cython kivy
+
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v4
+      with:
+        path: ~/.buildozer
+        key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-global-
+
+    - name: Cache Buildozer project directory
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: buildozer-project-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-project-
 
     - name: Accept Android SDK Licenses
       run: |
-        yes | buildozer android deploy || true
+        yes | buildozer android debug || true
 
     - name: Build Android Package
       run: |
