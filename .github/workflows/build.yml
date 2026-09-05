@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04   # ثابت بدل ubuntu-latest لتفادي كسر buildozer/p4a مع Ubuntu 24.04
+    runs-on: ubuntu-22.04
 
     steps:
     - uses: actions/checkout@v4
@@ -59,7 +59,25 @@ jobs:
 
     - name: Build Android Package
       run: |
-        buildozer -v android debug
+        set -o pipefail
+        buildozer -v android debug 2>&1 | tee build_full.log
+
+    - name: Show real error on failure
+      if: failure()
+      run: |
+        echo "===================== SUMMARY OF REAL ERRORS ====================="
+        grep -n -i -E "error|exception|failed|fatal|traceback" build_full.log | grep -v -i "warning" | tail -n 60
+        echo "===================================================================="
+        echo ""
+        echo "----- Last 120 lines of full log for context -----"
+        tail -n 120 build_full.log
+
+    - name: Upload full build log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-build-log
+        path: build_full.log
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
