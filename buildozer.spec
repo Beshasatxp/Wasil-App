@@ -19,7 +19,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 1.0.0
 
 # (list) Application requirements
-requirements = python3,kivy==2.3.0
+requirements = python3,kivy==2.2.1
 
 # (str) Supported orientation (one of landscape, sensorLandscape, portrait or all)
 orientation = portrait
@@ -36,8 +36,11 @@ android.api = 33
 # (int) Minimum API your APK / AAB will support
 android.minapi = 21
 
-# (str) Android NDK version to use
-android.ndk = 23b
+# (int) Android NDK API to use. This is the minimum API your app will support.
+android.ndk_api = 21
+
+# (str) Android NDK version to use (minimum supported by p4a is 25)
+android.ndk = 25b
 
 # (str) Android NDK architecture to build for
 android.archs = arm64-v8a, armeabi-v7a
