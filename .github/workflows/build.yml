@@ -43,15 +43,15 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.buildozer
-        key: buildozer-global-v2-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-global-v2-
+        key: buildozer-global-v3-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-global-v3-
 
     - name: Cache Buildozer project directory
       uses: actions/cache@v4
       with:
         path: .buildozer
-        key: buildozer-project-v2-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-project-v2-
+        key: buildozer-project-v3-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-project-v3-
 
     - name: Accept Android SDK Licenses
       run: |
