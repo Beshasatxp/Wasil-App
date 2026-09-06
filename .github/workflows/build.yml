@@ -9,11 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-22.04
 
-    env:
-      VIRTUALENV_PIP: "23.3.2"
-      VIRTUALENV_SETUPTOOLS: "68.0.0"
-      VIRTUALENV_WHEEL: "0.41.2"
-
     steps:
     - uses: actions/checkout@v4
 
@@ -29,7 +24,7 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Clean Previous Cache & Corrupted Environments
+    - name: Clean Cache & Previous Builds
       run: |
         rm -rf ~/.buildozer
         rm -rf .buildozer
@@ -46,9 +41,8 @@ jobs:
 
     - name: Install Python Dependencies
       run: |
-        python3 -m pip install --upgrade "pip==23.3.2"
+        python3 -m pip install --upgrade pip
         pip install "virtualenv==20.25.0" "Cython==0.29.33" "buildozer==1.5.0"
-        pip install kivy
 
     - name: Accept Android SDK Licenses
       run: |
