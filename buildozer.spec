@@ -6,8 +6,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 1.0.0
 
-# (list) Application requirements - NO version pins, use p4a's tested recipes
-requirements = python3,kivy
+# python3 & kivy master: kivy master fixes NDK25 OpenGL header mismatch (documented kivy issue)
+requirements = python3,kivy==master
 
 orientation = portrait
 fullscreen = 0

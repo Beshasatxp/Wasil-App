@@ -44,15 +44,15 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.buildozer
-        key: buildozer-global-v5-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-global-v5-
+        key: buildozer-global-v6-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-global-v6-
 
     - name: Cache Buildozer project directory
       uses: actions/cache@v4
       with:
         path: .buildozer
-        key: buildozer-project-v5-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-project-v5-
+        key: buildozer-project-v6-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-project-v6-
 
     - name: Accept Android SDK Licenses
       run: |
@@ -69,9 +69,6 @@ jobs:
         echo "===================== SUMMARY OF REAL ERRORS ====================="
         grep -n -i -E "error|exception|failed|fatal|traceback" build_full.log | grep -v -i "warning" | tail -n 60
         echo "===================================================================="
-        echo ""
-        echo "----- Last 120 lines of full log for context -----"
-        tail -n 120 build_full.log
 
     - name: Upload full build log
       if: always()
