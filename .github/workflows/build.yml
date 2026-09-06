@@ -17,17 +17,66 @@ jobs:
         sudo rm -rf /usr/local/lib/android
         sudo rm -rf /opt/ghc
         sudo rm -rf /opt/hostedtoolcache/CodeQL
-        sudo docker image prune --all --force
 
-    - name: Build with buildozer-action
-      id: buildozer
-      uses: ArtemSBulgakov/buildozer-action@v1
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
       with:
-        workdir: .
-        buildozer_version: stable
+        python-version: '3.11'
+
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          git zip unzip openjdk-17-jdk python3-pip \
+          autoconf automake libtool pkg-config \
+          zlib1g-dev libffi-dev libssl-dev \
+          libncurses-dev libncursesw5-dev \
+          cmake
+
+    - name: Install Python Dependencies
+      run: |
+        python3 -m pip install --upgrade pip==24.0
+        pip install "Cython==0.29.33" "buildozer==1.5.0"
+        pip install kivy
+
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v4
+      with:
+        path: ~/.buildozer
+        key: buildozer-global-v7-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-global-v7-
+
+    - name: Cache Buildozer project directory
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: buildozer-project-v7-${{ hashFiles('buildozer.spec') }}
+        restore-keys: buildozer-project-v7-
+
+    - name: Accept Android SDK Licenses
+      run: |
+        yes | buildozer android debug || true
+
+    - name: Build Android Package
+      run: |
+        set -o pipefail
+        buildozer -v android debug 2>&1 | tee build_full.log
+
+    - name: Show real error on failure
+      if: failure()
+      run: |
+        echo "===================== SUMMARY OF REAL ERRORS ====================="
+        grep -n -i -E "error|exception|failed|fatal|traceback" build_full.log | grep -v -i "warning" | tail -n 60
+
+    - name: Upload full build log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: full-build-log
+        path: build_full.log
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Wasil-Release-App
-        path: ${{ steps.buildozer.outputs.filename }}
+        path: bin/*
