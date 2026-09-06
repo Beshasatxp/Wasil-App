@@ -3,6 +3,7 @@ name: Build Wasil App AAB & APK
 on:
   push:
     branches: [ main, master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -28,6 +29,11 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Clean Previous Cache & Corrupted Environments
+      run: |
+        rm -rf ~/.buildozer
+        rm -rf .buildozer
+
     - name: Install System Dependencies
       run: |
         sudo apt-get update
@@ -43,20 +49,6 @@ jobs:
         python3 -m pip install --upgrade "pip==23.3.2"
         pip install "virtualenv==20.25.0" "Cython==0.29.33" "buildozer==1.5.0"
         pip install kivy
-
-    - name: Cache Buildozer global directory
-      uses: actions/cache@v4
-      with:
-        path: ~/.buildozer
-        key: buildozer-global-v8-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-global-v8-
-
-    - name: Cache Buildozer project directory
-      uses: actions/cache@v4
-      with:
-        path: .buildozer
-        key: buildozer-project-v8-${{ hashFiles('buildozer.spec') }}
-        restore-keys: buildozer-project-v8-
 
     - name: Accept Android SDK Licenses
       run: |
