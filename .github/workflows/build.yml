@@ -1,7 +1,9 @@
-name: Build Wasil App AAB & APK
+name: Build Android App
 
 on:
   push:
+    branches: [ main, master ]
+  pull_request:
     branches: [ main, master ]
   workflow_dispatch:
 
@@ -10,64 +12,32 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
 
-    - name: Free up disk space
-      run: |
-        sudo rm -rf /usr/share/dotnet
-        sudo rm -rf /usr/local/lib/android
-        sudo rm -rf /opt/ghc
-        sudo rm -rf /opt/hostedtoolcache/CodeQL
-
-    - name: Set up Python 3.11
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
 
-    - name: Clean Cache & Previous Builds
+    - name: Install Correct Repair Libraries
       run: |
-        rm -rf ~/.buildozer
-        rm -rf .buildozer
+        # تثبيت وتحديد إصدارات الأدوات التي تحل أخطاء التجميع
+        python -m pip install --upgrade "pip<24.1" "setuptools<69.0" wheel
+        python -m pip install --upgrade "buildozer>=1.5.0" "cython==0.29.33"
 
     - name: Install System Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
-          git zip unzip openjdk-17-jdk python3-pip \
-          autoconf automake libtool pkg-config \
-          zlib1g-dev libffi-dev libssl-dev \
-          libncurses-dev libncursesw5-dev \
-          cmake
+        sudo apt-get install -y build-essential ccache git python3-dev libffi-dev \
+          libssl-dev gettext zlib1g-dev openjdk-17-jdk libltdl-dev unzip zip
 
-    - name: Install Python Dependencies
+    - name: Build Android APK
       run: |
-        python3 -m pip install --upgrade pip
-        pip install "virtualenv==20.25.0" "Cython==0.29.33" "buildozer==1.5.0"
+        buildozer android debug
 
-    - name: Accept Android SDK Licenses
-      run: |
-        yes | buildozer android debug || true
-
-    - name: Build Android Package
-      run: |
-        set -o pipefail
-        buildozer -v android debug 2>&1 | tee build_full.log
-
-    - name: Show real error on failure
-      if: failure()
-      run: |
-        echo "===================== SUMMARY OF REAL ERRORS ====================="
-        grep -n -i -E "error|exception|failed|fatal|traceback" build_full.log | grep -v -i "warning" | tail -n 60
-
-    - name: Upload full build log
-      if: always()
+    - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: full-build-log
-        path: build_full.log
-
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Wasil-Release-App
-        path: bin/*
+        name: app-debug-apk
+        path: bin/*.apk
